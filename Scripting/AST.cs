@@ -739,7 +739,25 @@ namespace CEasyUO
         }
         public override object GetValue()
         {
-            throw new NotImplementedException();
+            var interp = Assistant.Engine.m_MainForm?.Interpreter;
+            if ( interp == null )
+                throw new InvalidOperationException( "No active interpreter" );
+
+            var evalArgs = new List<object>();
+            if ( args != null )
+            {
+                foreach ( var a in args )
+                    evalArgs.Add( a.GetValue() );
+            }
+
+            try
+            {
+                return interp.CallFunction( ident, evalArgs.ToArray() );
+            }
+            catch
+            {
+                return null;
+            }
         }
     }
 
