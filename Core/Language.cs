@@ -4,7 +4,7 @@ namespace Assistant
 {
     internal class Language
     {
-        public static string CliLocName { get; internal set; }
+        public static string CliLocName { get; internal set; } = "enu";
 
         private static Ultima.StringList m_Cliloc;
         private static string m_LoadedLang;
@@ -31,6 +31,9 @@ namespace Assistant
         {
             if (loc == null)
                 return string.Empty;
+
+            if (int.TryParse(loc.ToString(), out int id))
+                return GetString(id);
 
             return loc.ToString();
         }
