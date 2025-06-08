@@ -18,6 +18,19 @@
 1. Run `dotnet build CEasyUO.csproj -c Release`
 2. Copy `bin/CEasyUO/CEasyUO.exe` to `ClassicUO/data/plugins/`
 
+## Building from Source
+
+### Prerequisites
+- Windows with the .NET Framework 4.7.1 Developer Pack installed
+- Visual Studio 2019 or newer with the "Desktop development with C#" workload (or MSBuild tools)
+
+### Compile
+1. Open `CEasyUO.csproj` in Visual Studio and choose **Build > Build Solution** or run:
+```
+msbuild CEasyUO.csproj /p:Configuration=Release
+```
+2. Copy the `bin/CEasyUO/CEasyUO.exe` produced by the build into your `ClassicUO/data/plugins/CEasyUO` folder.
+
 ## This project is not yet complete or in a usable state for end users.
 
 # Really this will not work for you yet, This code is here simply incase someone wants to take over the project.
