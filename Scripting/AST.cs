@@ -739,7 +739,21 @@ namespace CEasyUO
         }
         public override object GetValue()
         {
-            throw new NotImplementedException();
+            var values = new List<object>();
+            if (args != null)
+            {
+                foreach (var a in args)
+                    values.Add(a.GetValue());
+            }
+
+            try
+            {
+                return EUOInterpreter.CallFunction(ident, values.ToArray());
+            }
+            catch (KeyNotFoundException ex)
+            {
+                throw new Exception($"Function '{ident}' not found", ex);
+            }
         }
     }
 
