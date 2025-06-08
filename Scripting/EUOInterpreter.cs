@@ -197,6 +197,46 @@ namespace CEasyUO
             CurrentStatment = CurrentStack.Pop();
         }
 
+        public object CallFunction( string name, params object[] parameters )
+        {
+            var func = ( m_Statements[0] as Block ).statements.FirstOrDefault( t => ( t is Func f ) && f.ident == name ) as Block;
+            if ( func == null )
+                throw new InvalidOperationException( $"Unknown function {name}" );
+
+            var savedStatement = CurrentStatment;
+            var savedStack = CurrentStack;
+            var savedBlock = CurrentBlock;
+            var savedBlockStack = new Stack<Block>( BlockStack.Reverse() );
+            var savedOldStacks = new Stack<Stack<Stmt>>( OldStacks.Reverse() );
+
+            int idx = 1;
+            foreach ( var p in parameters )
+                Setvariable( $"%{idx++}", p );
+
+            int targetBlockCount = BlockStack.Count;
+            OldStacks.Push( CurrentStack );
+            BlockStack.Push( CurrentBlock );
+
+            CurrentBlock = func;
+            CurrentStack = CurrentBlock.GetStack();
+            CurrentStatment = CurrentStack.Pop();
+
+            while ( BlockStack.Count > targetBlockCount )
+            {
+                Statement();
+            }
+
+            var result = GetVariable<object>( "#result" );
+
+            CurrentStatment = savedStatement;
+            CurrentStack = savedStack;
+            CurrentBlock = savedBlock;
+            BlockStack = savedBlockStack;
+            OldStacks = savedOldStacks;
+
+            return result;
+        }
+
         private void HandleGoto( Goto go )
         {
             //find the label
