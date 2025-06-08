@@ -10,6 +10,14 @@
   ]
 ```
 
+## Prerequisites
+- Visual Studio or the .NET SDK 4.7.1
+- Ensure `dotnet` is installed or use Visual Studio
+
+## Building from source
+1. Run `dotnet build CEasyUO.csproj -c Release`
+2. Copy `bin/CEasyUO/CEasyUO.exe` to `ClassicUO/data/plugins/`
+
 ## This project is not yet complete or in a usable state for end users.
 
 # Really this will not work for you yet, This code is here simply incase someone wants to take over the project.
