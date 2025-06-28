@@ -1,4 +1,4 @@
-﻿using Assistant;
+using Assistant;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -695,11 +695,11 @@ namespace CEasyUO
                     break;
                 case Symbol.mul:
                     if(leftExpr is IntLiteral || rightExpr is IntLiteral)
-                        return (int)leftExpr.GetValueInt() - (int)rightExpr.GetValueInt();
+                        return (int)leftExpr.GetValueInt() * (int)rightExpr.GetValueInt();
                     break;
                 case Symbol.div:
-                    if(leftExpr is IntLiteral || rightExpr is IntLiteral)
-                        return (int)leftExpr.GetValueInt() - (int)rightExpr.GetValueInt();
+                    if(leftExpr is IntLiteral || rightExpr is IntLiteral && rightExpr.GetValueInt() != 0)
+                        return (int)leftExpr.GetValueInt() / (int)rightExpr.GetValueInt();
                     break;
                 case Symbol.Concat:
                     return leftExpr.GetValue().ToString() + rightExpr.GetValue().ToString();
@@ -739,11 +739,23 @@ namespace CEasyUO
         }
         public override object GetValue()
         {
+            codex/implement-getvalue-in-callexpr
             var values = new List<object>();
             if (args != null)
             {
                 foreach (var a in args)
                     values.Add(a.GetValue());
+
+            var interp = Assistant.Engine.m_MainForm?.Interpreter;
+            if ( interp == null )
+                throw new InvalidOperationException( "No active interpreter" );
+
+            var evalArgs = new List<object>();
+            if ( args != null )
+            {
+                foreach ( var a in args )
+                    evalArgs.Add( a.GetValue() );
+
             }
 
             try
@@ -753,6 +765,13 @@ namespace CEasyUO
             catch (KeyNotFoundException ex)
             {
                 throw new Exception($"Function '{ident}' not found", ex);
+
+                return interp.CallFunction( ident, evalArgs.ToArray() );
+            }
+            catch
+            {
+                return null;
+
             }
         }
     }
