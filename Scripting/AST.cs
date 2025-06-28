@@ -1,4 +1,4 @@
-﻿using Assistant;
+using Assistant;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -739,6 +739,13 @@ namespace CEasyUO
         }
         public override object GetValue()
         {
+            codex/implement-getvalue-in-callexpr
+            var values = new List<object>();
+            if (args != null)
+            {
+                foreach (var a in args)
+                    values.Add(a.GetValue());
+
             var interp = Assistant.Engine.m_MainForm?.Interpreter;
             if ( interp == null )
                 throw new InvalidOperationException( "No active interpreter" );
@@ -748,15 +755,23 @@ namespace CEasyUO
             {
                 foreach ( var a in args )
                     evalArgs.Add( a.GetValue() );
+
             }
 
             try
             {
+                return EUOInterpreter.CallFunction(ident, values.ToArray());
+            }
+            catch (KeyNotFoundException ex)
+            {
+                throw new Exception($"Function '{ident}' not found", ex);
+
                 return interp.CallFunction( ident, evalArgs.ToArray() );
             }
             catch
             {
                 return null;
+
             }
         }
     }

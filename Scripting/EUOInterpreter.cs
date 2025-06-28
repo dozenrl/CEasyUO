@@ -17,6 +17,9 @@ namespace CEasyUO
         private Dictionary<string,int> Labels = new Dictionary<string, int>();
         private Dictionary<string, int> Subs = new Dictionary<string, int>();
         private static Dictionary<string,object> Variables = new Dictionary<string, object>();
+        private static readonly Dictionary<string, Func<object[], object>> BuiltInFunctions = new Dictionary<string, Func<object[], object>>(StringComparer.OrdinalIgnoreCase);
+
+        public static EUOInterpreter Current { get; private set; }
 
         private static Stack<Stmt> CurrentStack = null;
 
@@ -54,6 +57,7 @@ namespace CEasyUO
                 ScriptThread.Start();
                 return;
             }
+            Current = this;
             Running = true;
             while(Running)
             {
@@ -87,6 +91,8 @@ namespace CEasyUO
             if(ScriptThread.IsAlive)
                 ScriptThread.Abort();
             ScriptThread = null;
+
+            Current = null;
 
             CurrentStatment = null;
             CurrentBlock = null;
@@ -581,6 +587,48 @@ namespace CEasyUO
                         EUOVars.LastTarget.Gfx = ushort.Parse( value.ToString() );
                         break;
                 }
+        }
+
+        public static void RegisterBuiltIn(string name, Func<object[], object> func)
+        {
+            BuiltInFunctions[name.ToLowerInvariant()] = func;
+        }
+
+        public static object CallFunction(string name, params object[] parameters)
+        {
+            name = name.ToLowerInvariant();
+            if (BuiltInFunctions.TryGetValue(name, out var func))
+                return func(parameters);
+
+            if (Current != null && Current.TryCallUserFunction(name, parameters, out var result))
+                return result;
+
+            throw new KeyNotFoundException($"Undefined function '{name}'");
+        }
+
+        private bool TryCallUserFunction(string name, object[] parameters, out object result)
+        {
+            result = null;
+            var func = (m_Statements[0] as Block).statements.FirstOrDefault(t => (t is Func f) && f.ident == name) as Block;
+            if (func == null)
+                return false;
+
+            int index = 1;
+            foreach (var p in parameters)
+                Setvariable($"%{index++}", p);
+
+            OldStacks.Push(CurrentStack);
+            BlockStack.Push(CurrentBlock);
+            var callBlock = func;
+            CurrentBlock = callBlock;
+            CurrentStack = callBlock.GetStack();
+            CurrentStatment = CurrentStack.Pop();
+
+            while (CurrentBlock == callBlock && CurrentStatment != null)
+                Statement();
+
+            result = GetVariable<object>("#result");
+            return true;
         }
         private void Set()
         {
