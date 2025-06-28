@@ -695,11 +695,11 @@ namespace CEasyUO
                     break;
                 case Symbol.mul:
                     if(leftExpr is IntLiteral || rightExpr is IntLiteral)
-                        return (int)leftExpr.GetValueInt() - (int)rightExpr.GetValueInt();
+                        return (int)leftExpr.GetValueInt() * (int)rightExpr.GetValueInt();
                     break;
                 case Symbol.div:
-                    if(leftExpr is IntLiteral || rightExpr is IntLiteral)
-                        return (int)leftExpr.GetValueInt() - (int)rightExpr.GetValueInt();
+                    if(leftExpr is IntLiteral || rightExpr is IntLiteral && rightExpr.GetValueInt() != 0)
+                        return (int)leftExpr.GetValueInt() / (int)rightExpr.GetValueInt();
                     break;
                 case Symbol.Concat:
                     return leftExpr.GetValue().ToString() + rightExpr.GetValue().ToString();
